@@ -482,7 +482,7 @@ impl Loader for GGUFLoader {
                 a => bail!("Unsupported architecture `{a:?}` for GGUF"),
             },
             ModelKind::GgufAdapter { adapter, .. } => match arch {
-                GGUFArchitecture::Llama => Model::XLoraLlama(XLoraQLlama::try_from(model_config)?),
+                GGUFArchitecture::Llama | GGUFArchitecture::Gemma3 => Model::XLoraLlama(XLoraQLlama::try_from(model_config)?),
                 GGUFArchitecture::Phi3 => Model::XLoraPhi3(XLoraQPhi3::try_from(model_config)?),
                 a => bail!(
                     "Unsupported architecture `{a:?}` for GGUF {kind}",
