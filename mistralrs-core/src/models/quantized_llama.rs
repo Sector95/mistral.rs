@@ -405,7 +405,7 @@ impl ModelConfig::FromGGUF for ModelWeights {
     ) -> Result<Self> {
         // Parameter extraction from metadata.
         let metadata = ContentMetadata {
-            path_prefix: "llama",
+            path_prefix: "gemma3",
             metadata: ct.get_metadata(),
         };
         let PropsGGUF {
