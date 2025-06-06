@@ -347,7 +347,7 @@ impl TryFrom<ContentMetadata<'_>> for PropsGGUF {
     type Error = anyhow::Error;
 
     fn try_from(c: ContentMetadata) -> std::result::Result<Self, Self::Error> {
-        c.verify_arch("llama")?;
+        c.verify_arch("llama").or(c.verify_arch("gemma3"))?;
 
         let required = [
             "attention.head_count",
