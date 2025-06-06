@@ -335,7 +335,6 @@ pub(crate) struct PropsGGUF {
     pub head_count_kv: usize,
     pub block_count: usize,
     pub embedding_length: usize,
-    pub rope_dim: usize,
     pub rms_norm_eps: f32,
     pub max_seq_len: usize,
     pub rope_freq_base: f32,
@@ -347,14 +346,14 @@ impl TryFrom<ContentMetadata<'_>> for PropsGGUF {
     type Error = anyhow::Error;
 
     fn try_from(c: ContentMetadata) -> std::result::Result<Self, Self::Error> {
-        c.verify_arch("llama")?;
+        c.verify_arch("gemma3")?;
 
         let required = [
             "attention.head_count",
             "attention.head_count_kv",
             "block_count",
             "embedding_length",
-            "rope.dimension_count",
+            "attention.key_length",
             "attention.layer_norm_rms_epsilon",
         ];
         c.has_required_keys(&required)?;
@@ -371,7 +370,6 @@ impl TryFrom<ContentMetadata<'_>> for PropsGGUF {
             head_count_kv: c.get_value::<u32>("attention.head_count_kv")? as usize,
             block_count: c.get_value::<u32>("block_count")? as usize,
             embedding_length: embed_len,
-            rope_dim: c.get_value::<u32>("rope.dimension_count")? as usize,
             // Strangely this value is generally 1e-6 in GGUF file but used to be 1e-5 by default.
             rms_norm_eps: c.get_value("attention.layer_norm_rms_epsilon")?,
             max_seq_len: c
@@ -405,7 +403,7 @@ impl ModelConfig::FromGGUF for ModelWeights {
     ) -> Result<Self> {
         // Parameter extraction from metadata.
         let metadata = ContentMetadata {
-            path_prefix: "llama",
+            path_prefix: "gemma3",
             metadata: ct.get_metadata(),
         };
         let PropsGGUF {
@@ -415,7 +413,6 @@ impl ModelConfig::FromGGUF for ModelWeights {
             head_count_kv,
             block_count,
             embedding_length,
-            rope_dim,
             rms_norm_eps,
             max_seq_len,
             rope_freq_base,
@@ -447,7 +444,7 @@ impl ModelConfig::FromGGUF for ModelWeights {
                 device.location(),
                 Arc::new(RotaryEmbedding::new(
                     rope_freq_base,
-                    rope_dim,
+                    head_dim,
                     max_seq_len,
                     device,
                     false,
